@@ -17,7 +17,7 @@
         "express",
         "mocha"
     ],
-    "author": "dennisnderitu254",
+    "author": "mossad054",
     "license": "ISC",
     "devDependencies": {
         "chai": "^4.3.6",
@@ -31,4 +31,4 @@
     "bugs": {
         "url": "https://github.com/Mossad054/alx-backend-javascript/issues"
     },
-    "homepage": "https://github.com/Mossad054/alx-backend-javascript.git/home"
+    "homepage": "https://github.com/Mossad054/alx-backend-javascript.git/README.md"
