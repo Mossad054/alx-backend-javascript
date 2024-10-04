@@ -1,59 +1,39 @@
 const express = require('express');
-const { promises: fs } = require('fs');
 const { argv } = require('process');
+const fs = require('fs');
 
 const app = express();
-const port = 1245;
-
-async function countStudents(filePath) {
-  try {
-    const data = await fs.readFile(filePath, 'utf8');
-    const lines = data.trim().split('\n');
-    const students = lines.slice(1).filter(line => line.trim() !== '').map(line => line.split(','));
-
-    const totalStudents = students.length;
-    const fieldCounts = {};
-    const studentsByField = {};
-
-    students.forEach(([firstName, , , field]) => {
-      if (!fieldCounts[field]) {
-        fieldCounts[field] = 0;
-        studentsByField[field] = [];
-      }
-      fieldCounts[field]++;
-      studentsByField[field].push(firstName);
-    });
-
-    let output = `Number of students: ${totalStudents}\n`;
-    for (const [field, count] of Object.entries(fieldCounts)) {
-      output += `Number of students in ${field}: ${count}. List: ${studentsByField[field].join(', ')}\n`;
-    }
-
-    return output;
-  } catch (error) {
-    throw new Error('Cannot load the database');
-  }
-}
 
 app.get('/', (req, res) => {
-  res.type('text/plain');
+  res.set('Content-Type', 'text/plain');
   res.send('Hello Holberton School!');
 });
 
-app.get('/students', async (req, res) => {
-  res.type('text/plain');
+app.get('/students', (req, res) => {
+  res.set('Content-Type', 'text/plain');
   res.write('This is the list of our students\n');
-  try {
-    const studentsInfo = await countStudents(argv[2]);
-    res.write(studentsInfo);
+  fs.readFile(argv[2], 'utf8', (err, data) => {
+    if (err) {
+      throw Error('Cannot load the database');
+    }
+    const result = [];
+    data.split('\n').forEach((data) => {
+      result.push(data.split(','));
+    });
+    result.shift();
+    const newis = [];
+    result.forEach((data) => newis.push([data[0], data[3]]));
+    const fields = new Set();
+    newis.forEach((item) => fields.add(item[1]));
+    const final = {};
+    fields.forEach((data) => { (final[data] = 0); });
+    newis.forEach((data) => { (final[data[1]] += 1); });
+    res.write(`Number of students: ${result.filter((check) => check.length > 3).length}\n`);
+    Object.keys(final).forEach((data) => res.write(`Number of students in ${data}: ${final[data]}. List: ${newis.filter((n) => n[1] === data).map((n) => n[0]).join(', ')}\n`));
     res.end();
-  } catch (error) {
-    res.status(500).end(error.message);
-  }
+  });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
-});
+app.listen(1245);
 
 module.exports = app;
